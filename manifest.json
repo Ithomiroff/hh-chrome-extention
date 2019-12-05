@@ -1,0 +1,20 @@
+{
+    "name": "123",
+    "description": "123",
+    "version": "9",
+    "manifest_version": 2,
+    "permissions": [
+        "tabs"
+    ],
+    "content_scripts": [
+      {
+        "matches": [
+          "https://github.com/*",
+          "https://kostroma.hh.ru/*"
+        ],
+        "js": [
+          "content.js"
+        ]
+      }
+    ]
+  }
