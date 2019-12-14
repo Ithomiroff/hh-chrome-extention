@@ -1,20 +1,27 @@
 {
-    "name": "123",
-    "description": "123",
-    "version": "9",
+    "name": "HH CLICKERS",
+    "description": "CLICKERS",
+    "version": "0.00003",
     "manifest_version": 2,
     "permissions": [
-        "tabs"
+        "tabs",
+        "activeTab",
+        "*://*/*"
     ],
     "content_scripts": [
       {
         "matches": [
-          "https://github.com/*",
           "https://kostroma.hh.ru/*"
         ],
         "js": [
           "content.js"
         ]
       }
-    ]
+    ],
+    "background": {
+      "scripts": [
+        "background.js"
+      ],
+      "persistent": false
+    }
   }
