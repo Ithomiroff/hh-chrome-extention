@@ -1,27 +1,31 @@
 {
-    "name": "HH CLICKERS",
-    "description": "CLICKERS",
-    "version": "0.00003",
-    "manifest_version": 2,
-    "permissions": [
-        "tabs",
-        "activeTab",
-        "*://*/*"
-    ],
-    "content_scripts": [
-      {
-        "matches": [
-          "https://kostroma.hh.ru/*"
-        ],
-        "js": [
-          "content.js"
-        ]
-      }
-    ],
-    "background": {
-      "scripts": [
-        "background.js"
+  "name": "HH CLICKERS",
+  "description": "CLICKERS",
+  "version": "0.00003",
+  "manifest_version": 2,
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "*://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://kostroma.hh.ru/*"
       ],
-      "persistent": false
+      "js": [
+        "content.js"
+      ]
     }
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_title": "HH Clicker",
+    "default_popup": "popup.html"
   }
+}

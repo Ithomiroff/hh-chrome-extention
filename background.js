@@ -12,11 +12,21 @@ tabs.onCreated.addListener((tab) => {
     tabs.get(id, (tabInfo) => {
         const { openerTabId } = tabInfo;
         tabs.executeScript({code: inviteScript()}, () => {
-            tabs.sendMessage(openerTabId, {done: true });
+            setTimeout(() => tabs.remove(id), 5000);
+            setTimeout(() => tabs.sendMessage(openerTabId, {action: 'invited'}), 6000);
         });
     });
 
 });
 
-// chrome.tabs.onActiveChanged.addListener((id, selectInfo) => console.warn(selectInfo));
+// setTimeout(() => {
+//     tabs.executeScript({code: inviteScript()}, () => {
+//         tabs.remove(id);
+//         setTimeout(() => {
+//             tabs.sendMessage(openerTabId, {action: 'invited'});
+//         }, 500)
+//     });
+// }, 5000)
+
+
 

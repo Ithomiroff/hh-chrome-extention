@@ -2,81 +2,116 @@ const classes = {
     resumeWrapper: '[data-resume-id]',
     resumeDate: '.resume-search-item__state_phone_interview',
     button: '.bloko-link_dimmed',
+    buttonStart: '#ext-hh-start',
 };
 
-const state = {
-    activeIndex: 0,
+let state = {
+    clicks: 0,
     today: new Date(),
     maxDaysCount: 30,
+    maxClicksCount: 30,
+    resumes: [],
+    activeId: null,
+    maxResumesInFilter: null
 };
 
-runApp();
+function runApp ({clicks = 10, date = 30}) {
+    const eHeader = document.querySelector('h1.header');
+    const digits = eHeader.textContent.match(/\d+/g);
 
-function runApp () {
     const resumes = getFormatData();
+    state = {
+        ...state,
+        maxDaysCount: date,
+        maxClicksCount: clicks,
+        resumes,
+        maxResumesInFilter: digits[0] || 0
+    };
 
-    // inviteCandidate(resumes[state.activeIndex]);
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page');
 
-    resumes.forEach(res => inviteCandidate(res));
+    console.warn(page)
+    // console.warn(state);
+    // inviteCandidate(resumes[0]);
 }
 
+
+function goToNextCandidate() {
+    if (state.maxClicksCount > state.clicks) {
+        inviteCandidate(state.resumes[0]);
+    }
+}
 
 function getFormatData() {
     const resumeBlocks = document.querySelectorAll(classes.resumeWrapper);
     const resumeBlocksArray = [...resumeBlocks];
-    return resumeBlocksArray.map((ref) => {
-       return {
-           ref,
-           id: ref.getAttribute('data-resume-id'),
-           invited: false
-       }
-    });
-    // resumeBlocks.forEach((block, i) => {
-    //     if (!block.querySelector(classes.resumeDate)) {
-    //         let button = block.querySelector(classes.button);
-    //         button.setAttribute('target', '_blank')
-    //         if (i === 1) {
-    //             // button.click();
-    //         }
-    //     }
-    // });
+    const res = [];
+    for (let i = 0; i < resumeBlocksArray.length; i++) {
+        const prevInviteDate = resumeBlocksArray[i].querySelector(classes.resumeDate);
+        const text = prevInviteDate ? prevInviteDate.textContent : null;
+        if (text) {
+            if (needDoInvite(text)) {
+                res.push({
+                    ref: resumeBlocksArray[i],
+                    id: resumeBlocksArray[i].getAttribute('data-resume-id'),
+                });
+            }
+        } else {
+            res.push({
+                ref: resumeBlocksArray[i],
+                id: resumeBlocksArray[i].getAttribute('data-resume-id')
+            })
+        }
 
-    // chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    //     console.warn(tabs);
-    //   });
+    }
+    return res;
 }
 
 function inviteCandidate(resume) {
-    const prevInviteDate = resume.ref.querySelector(classes.resumeDate);
+    state = {
+        ...state,
+        activeId: resume.id
+    };
 
-    if (prevInviteDate) {
-        const text = prevInviteDate.textContent;
-        if (text) {
-            if (needDoInvite(text)) {
-                perfomInvite(resume);
-            }
-        }
-    } else {
-        perfomInvite(resume);
-    }
-}
-
-function perfomInvite(resume) {
     const btn = resume.ref.querySelector(classes.button);
-    console.warn(btn);
+    btn.setAttribute('target', '_blank');
+    btn.click();
 }
 
 
 function needDoInvite(text) {
-    const date = text.match(/\d+/g).join('.');
-    const diff = state.today.getTime() - new Date(date).getTime();
+    const date = text.match(/\d+/g);
+    const newDate = `${date[1]}.${date[0]}.${date[2]}`
+
+    const diff = state.today.getTime() - new Date(newDate).getTime();
+
     const diffDays = diff / (1000 * 3600 * 24);
+
     return diffDays > state.maxDaysCount;
 }
 
-chrome.runtime.onMessage.addListener(handleMessage);
+chrome.runtime.onMessage.addListener((msg) => {
+    switch (msg.action) {
+        case "start": {
+            console.log('start');
+            runApp(msg.body);
+            break;
+        }
+        case "invited": {
+            state = {
+                ...state,
+                resumes: state.resumes.filter(res => res.id !== state.activeId),
+                clicks: state.clicks + 1
+            };
+
+            console.log('invited');
+            goToNextCandidate();
+            break;
+        }
+        default:
+            break;
+    }
+});
 
 
-function handleMessage(msg) {
-    console.warn(msg);
-}
