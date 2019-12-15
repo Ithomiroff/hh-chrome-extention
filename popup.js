@@ -23,7 +23,3 @@ document.addEventListener(('DOMContentLoaded'), () => {
 
 });
 
-
-document.addEventListener('click', () => {
-    // tabs.getSelected(({id}) => tabs.sendMessage(id, {action: 'start'}));
-});

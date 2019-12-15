@@ -3,6 +3,8 @@ const classes = {
     resumeDate: '.resume-search-item__state_phone_interview',
     button: '.bloko-link_dimmed',
     buttonStart: '#ext-hh-start',
+    paginatorWrapper: '.bloko-button-group',
+    activePage: '.bloko-button_pressed'
 };
 
 let state = {
@@ -15,10 +17,11 @@ let state = {
     maxResumesInFilter: null
 };
 
+let test = 2;
 function runApp ({clicks = 10, date = 30}) {
     const eHeader = document.querySelector('h1.header');
     const digits = eHeader.textContent.match(/\d+/g);
-
+    console.warn(digits)
     const resumes = getFormatData();
     state = {
         ...state,
@@ -28,12 +31,20 @@ function runApp ({clicks = 10, date = 30}) {
         maxResumesInFilter: digits[0] || 0
     };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const page = urlParams.get('page');
+    console.warn(state);
 
-    console.warn(page)
-    // console.warn(state);
     // inviteCandidate(resumes[0]);
+    // inviteCandidate(resumes[0]);
+}
+
+function navigate() {
+    const ePaginator = document.querySelector(classes.paginatorWrapper);
+    const eActivePage = ePaginator.querySelector(classes.activePage);
+    const eNext = eActivePage.nextSibling;
+
+    if (eNext.firstElementChild) {
+        eNext.firstElementChild.click();
+    }
 }
 
 
