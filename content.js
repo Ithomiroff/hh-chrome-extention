@@ -17,24 +17,58 @@ let state = {
     maxResumesInFilter: null
 };
 
-let test = 2;
+function getState(res) {
+    chrome.runtime.sendMessage('', {type:'get'}, {}, (state) => {
+        res(state);
+    });
+}
+
+function setState(state) {
+    chrome.runtime.sendMessage('', {type:'set', data: state});
+}
+
+
+(() => init())();
+
+function init() {
+    getState((state) => {
+        const maxResumesInFilter = state.maxResumesInFilter;
+
+        if (maxResumesInFilter) {
+            scanPage();
+        }
+    });
+}
+
 function runApp ({clicks = 10, date = 30}) {
     const eHeader = document.querySelector('h1.header');
-    const digits = eHeader.textContent.match(/\d+/g);
-    console.warn(digits)
-    const resumes = getFormatData();
-    state = {
-        ...state,
+    let digits = eHeader.textContent.match(/\d+/g);
+
+    if (digits.length > 2) {
+        digits = digits[0] + digits[1];
+    }
+
+    const stateData = {
         maxDaysCount: date,
         maxClicksCount: clicks,
-        resumes,
-        maxResumesInFilter: digits[0] || 0
+        maxResumesInFilter: digits || 0
     };
 
-    console.warn(state);
+    setState(stateData);
 
-    // inviteCandidate(resumes[0]);
-    // inviteCandidate(resumes[0]);
+    scanPage();
+}
+
+function scanPage() {
+    const resumes = getFormatData();
+
+    setState({resumes});
+
+    if (resumes.length > 0) {
+        inviteCandidate(resumes[0]);
+    } else {
+        navigate();
+    }
 }
 
 function navigate() {
@@ -80,10 +114,8 @@ function getFormatData() {
 }
 
 function inviteCandidate(resume) {
-    state = {
-        ...state,
-        activeId: resume.id
-    };
+
+    setState({activeId: resume.id});
 
     const btn = resume.ref.querySelector(classes.button);
     btn.setAttribute('target', '_blank');
@@ -110,11 +142,12 @@ chrome.runtime.onMessage.addListener((msg) => {
             break;
         }
         case "invited": {
-            state = {
-                ...state,
+            const update = {
                 resumes: state.resumes.filter(res => res.id !== state.activeId),
                 clicks: state.clicks + 1
             };
+
+            setState(update);
 
             console.log('invited');
             goToNextCandidate();
