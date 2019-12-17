@@ -32,7 +32,7 @@ let RESUMES_ON_PAGE = [];
         console.warn('allowed resumes on page', RESUMES_ON_PAGE);
         setTimeout(() => {
             goToNextCandidate();
-        }, 5000);
+        }, 3000);
     }
 
 })();
