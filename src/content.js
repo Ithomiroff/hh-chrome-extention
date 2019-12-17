@@ -10,7 +10,7 @@ const classes = {
 let state = {
     clicks: 0,
     today: new Date(),
-    maxDaysCount: 30,
+    maxDaysCount: 1,
     maxClicksCount: 30,
     resumes: [],
     activeId: null,
@@ -28,7 +28,7 @@ function setState(state) {
 }
 
 
-(() => init())();
+// (() => init())();
 
 function init() {
     getState((state) => {
@@ -45,7 +45,7 @@ function runApp ({clicks = 10, date = 30}) {
     let digits = eHeader.textContent.match(/\d+/g);
 
     if (digits.length > 2) {
-        digits = digits[0] + digits[1];
+        digits = Number(`${digits[0]}${digits[1]}`);
     }
 
     const stateData = {
@@ -56,16 +56,26 @@ function runApp ({clicks = 10, date = 30}) {
 
     setState(stateData);
 
+    state = {
+        ...state,
+        stateData
+    };
+
     scanPage();
 }
 
 function scanPage() {
     const resumes = getFormatData();
-
+    
     setState({resumes});
 
+    state = {
+        ...state,
+        resumes
+    }
+
     if (resumes.length > 0) {
-        inviteCandidate(resumes[0]);
+        inviteCandidate(state.resumes[0]);
     } else {
         navigate();
     }
@@ -83,7 +93,7 @@ function navigate() {
 
 
 function goToNextCandidate() {
-    if (state.maxClicksCount > state.clicks) {
+    if (state.resumes.length > 0) {
         inviteCandidate(state.resumes[0]);
     }
 }
@@ -114,9 +124,11 @@ function getFormatData() {
 }
 
 function inviteCandidate(resume) {
-
     setState({activeId: resume.id});
-
+    state = {
+        ...state,
+        activeId: resume.id
+    }
     const btn = resume.ref.querySelector(classes.button);
     btn.setAttribute('target', '_blank');
     btn.click();
@@ -142,15 +154,25 @@ chrome.runtime.onMessage.addListener((msg) => {
             break;
         }
         case "invited": {
+
+
             const update = {
                 resumes: state.resumes.filter(res => res.id !== state.activeId),
                 clicks: state.clicks + 1
             };
 
-            setState(update);
+            state = {
+                ...state,
+                ...update
+            }
+            
+
+            console.log(state.resumes);
 
             console.log('invited');
             goToNextCandidate();
+
+            
             break;
         }
         default:

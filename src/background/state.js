@@ -18,11 +18,12 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
             return state;
         }
         case 'set': {
-            state = {
-                ...state,
-                ...message.data
-            };
-            console.warn(state);
+            console.warn(message.data);
+            // state = {
+            //     ...state,
+            //     ...message.data
+            // };
+            // console.warn(state);
             return;
         }
     }

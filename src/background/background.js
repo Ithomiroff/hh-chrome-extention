@@ -11,10 +11,12 @@ tabs.onCreated.addListener((tab) => {
     const {id} = tab;
     tabs.get(id, (tabInfo) => {
         const { openerTabId } = tabInfo;
-        tabs.executeScript({code: inviteScript()}, () => {
-            setTimeout(() => tabs.remove(id), 5000);
-            setTimeout(() => tabs.sendMessage(openerTabId, {action: 'invited'}), 6000);
-        });
+        setTimeout(() => {
+            tabs.executeScript({code: inviteScript()}, () => {
+                setTimeout(() => tabs.remove(id), 5000);
+                setTimeout(() => tabs.sendMessage(openerTabId, {action: 'invited'}), 5700);
+            });
+        }, 3000);
     });
 });
 
