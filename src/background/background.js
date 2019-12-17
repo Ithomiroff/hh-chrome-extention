@@ -13,10 +13,17 @@ tabs.onCreated.addListener((tab) => {
         const { openerTabId } = tabInfo;
         setTimeout(() => {
             tabs.executeScript({code: inviteScript()}, () => {
-                setTimeout(() => tabs.remove(id), 5000);
-                setTimeout(() => tabs.sendMessage(openerTabId, {action: 'invited'}), 5700);
+                console.warn('SCRIPT');
+                setTimeout(() => {
+                    console.warn('REMOVE');
+                    tabs.remove(id);
+                }, 5000);
+                setTimeout(() => {
+                    tabs.sendMessage(openerTabId, {action: 'invited'})
+                    console.warn('INVITED')
+                }, 5700);
             });
-        }, 3000);
+        }, 4000);
     });
 });
 

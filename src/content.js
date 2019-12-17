@@ -1,3 +1,17 @@
+const STATUSES = {
+    start: '1',
+    pause: '2',
+    finish: '3',
+};
+
+const keys = {
+    id: '__hhActiveID',
+    status: '__hhStatus',
+    maxDaysCount: '__hhMaxDaysCount',
+    maxClicksCount: '__hhMaxClicksCountt',
+    doneClicks: '__hhDoneClicks',
+}
+
 const classes = {
     resumeWrapper: '[data-resume-id]',
     resumeDate: '.resume-search-item__state_phone_interview',
@@ -7,78 +21,31 @@ const classes = {
     activePage: '.bloko-button_pressed'
 };
 
-let state = {
-    clicks: 0,
-    today: new Date(),
-    maxDaysCount: 1,
-    maxClicksCount: 30,
-    resumes: [],
-    activeId: null,
-    maxResumesInFilter: null
-};
+let RESUMES_ON_PAGE = [];
 
-function getState(res) {
-    chrome.runtime.sendMessage('', {type:'get'}, {}, (state) => {
-        res(state);
-    });
-}
+(() => {
 
-function setState(state) {
-    chrome.runtime.sendMessage('', {type:'set', data: state});
-}
+    RESUMES_ON_PAGE = getFormatData();
+    const status = localStorage.getItem(keys.status);
 
+    if (status && STATUSES.start) {
+        console.warn('allowed resumes on page', RESUMES_ON_PAGE);
+        setTimeout(() => {
+            goToNextCandidate();
+        }, 5000);
+    }
 
-// (() => init())();
+})();
 
-function init() {
-    getState((state) => {
-        const maxResumesInFilter = state.maxResumesInFilter;
-
-        if (maxResumesInFilter) {
-            scanPage();
-        }
-    });
-}
 
 function runApp ({clicks = 10, date = 30}) {
-    const eHeader = document.querySelector('h1.header');
-    let digits = eHeader.textContent.match(/\d+/g);
 
-    if (digits.length > 2) {
-        digits = Number(`${digits[0]}${digits[1]}`);
-    }
+    localStorage.setItem(keys.maxDaysCount , date);
+    localStorage.setItem(keys.maxClicksCount , clicks);
+    localStorage.setItem(keys.status , STATUSES.start);
+    localStorage.setItem(keys.doneClicks , 0);
 
-    const stateData = {
-        maxDaysCount: date,
-        maxClicksCount: clicks,
-        maxResumesInFilter: digits || 0
-    };
-
-    setState(stateData);
-
-    state = {
-        ...state,
-        stateData
-    };
-
-    scanPage();
-}
-
-function scanPage() {
-    const resumes = getFormatData();
-    
-    setState({resumes});
-
-    state = {
-        ...state,
-        resumes
-    }
-
-    if (resumes.length > 0) {
-        inviteCandidate(state.resumes[0]);
-    } else {
-        navigate();
-    }
+    goToNextCandidate();
 }
 
 function navigate() {
@@ -93,9 +60,27 @@ function navigate() {
 
 
 function goToNextCandidate() {
-    if (state.resumes.length > 0) {
-        inviteCandidate(state.resumes[0]);
-    }
+
+    const maxClicksCount = localStorage.getItem(keys.maxClicksCount);
+    const clicks = localStorage.getItem(keys.doneClicks);
+
+    if (Number(maxClicksCount) === Number(clicks)) {
+        localStorage.setItem(keys.status, STATUSES.finish);
+    } else {
+        if (RESUMES_ON_PAGE.length > 0) {
+            inviteCandidate(RESUMES_ON_PAGE[0]);
+        } else {
+            navigate();
+        }
+    } 
+}
+
+function inviteCandidate(resume) {
+    localStorage.setItem(keys.id , resume.id);
+
+    const btn = resume.ref.querySelector(classes.button);
+    btn.setAttribute('target', '_blank');
+    btn.click();
 }
 
 function getFormatData() {
@@ -123,61 +108,39 @@ function getFormatData() {
     return res;
 }
 
-function inviteCandidate(resume) {
-    setState({activeId: resume.id});
-    state = {
-        ...state,
-        activeId: resume.id
-    }
-    const btn = resume.ref.querySelector(classes.button);
-    btn.setAttribute('target', '_blank');
-    btn.click();
-}
-
-
 function needDoInvite(text) {
     const date = text.match(/\d+/g);
     const newDate = `${date[1]}.${date[0]}.${date[2]}`
 
-    const diff = state.today.getTime() - new Date(newDate).getTime();
+    const diff = (new Date()).getTime() - new Date(newDate).getTime();
 
     const diffDays = diff / (1000 * 3600 * 24);
 
-    return diffDays > state.maxDaysCount;
+    return diffDays >  localStorage.getItem(keys.maxDaysCount);
 }
+
 
 chrome.runtime.onMessage.addListener((msg) => {
     switch (msg.action) {
         case "start": {
-            console.log('start');
+            console.log('START');
             runApp(msg.body);
             break;
         }
         case "invited": {
+                       
+            const clicks = localStorage.getItem(keys.doneClicks);
+            localStorage.setItem(keys.doneClicks, Number(clicks) + 1);
 
-
-            const update = {
-                resumes: state.resumes.filter(res => res.id !== state.activeId),
-                clicks: state.clicks + 1
-            };
-
-            state = {
-                ...state,
-                ...update
-            }
+            RESUMES_ON_PAGE = RESUMES_ON_PAGE.filter(res => res.id !== localStorage.getItem(keys.id));
             
-
-            console.log(state.resumes);
-
-            console.log('invited');
+            console.log(RESUMES_ON_PAGE);
+            console.log('INVITED');
             goToNextCandidate();
-
-            
             break;
         }
         default:
             break;
     }
-});
-
+})
 
