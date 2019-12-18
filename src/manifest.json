@@ -6,16 +6,35 @@
   "permissions": [
     "tabs",
     "activeTab",
-    "*://*/*"
+    "*://*/*",
+    "storage"
   ],
   "content_scripts": [
     {
       "matches": [
-        "https://kostroma.hh.ru/*"
+        "https://kostroma.hh.ru/search/resume?*"
       ],
       "run_at": "document_end",
       "js": [
-        "content.js"
+        "content/main.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://kostroma.hh.ru/employer/negotiations/*"
+      ],
+      "run_at": "document_idle",
+      "js": [
+        "content/watcherInvitePage.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://kostroma.hh.ru/employer/vacancyresponses?*"
+      ],
+      "run_at": "document_end",
+      "js": [
+        "content/watcherResponsePage.js"
       ]
     }
   ],

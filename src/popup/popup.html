@@ -14,8 +14,7 @@
             font-family: sans-serif;
         }
         .wrapper {
-            width: 250px;
-            height: 150px;
+            width: 300px;
             background: #f5f9ff;
             border-radius: 10px;
             padding: 15px 20px;
@@ -51,12 +50,32 @@
             color: #fff;
             text-transform: uppercase;
         }
+        .progress {
+            padding: 10px 0;
+        }
+        .progress-block {
+            font-size: 16px;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+        }
+        .progress-block__title {
+            margin-bottom: 10px;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        #form-new {
+            display: none;
+        }
+        #progress {
+            display: none;
+        }
     </style>
     <script src="popup.js"></script>
 </head>
 <body>
     <div class="wrapper">
-        <form class="form">
+        <form class="form" id="form">
             <div class="field-wrapper">
                 <input type="text" class="field" name="date" id="date" value="30">
                 <span class="title">Количество дней</span>
@@ -67,6 +86,19 @@
             </div>
             <input type="submit" class="field button" value="Старт" id="start">
         </form>
+        <div class="progress" id="progress">
+            <div class="progress-block">
+                <span class="progress-block__title">Приглашено людей:</span>
+                <span class="progress-block__value" id="done">20</span>
+            </div>
+            <div class="progress-block">
+                <span class="progress-block__title">Нужно сделать кликов:</span>
+                <span class="progress-block__value" id="goal">300</span>
+            </div>
+        </div>
+        <div class="form" id="form-new">
+            <input type="submit" class="field button" value="Новый запрос" id="newRequest">
+        </div>
     </div>
 </body>
 </html>

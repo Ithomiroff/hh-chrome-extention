@@ -1,30 +1,31 @@
-const {tabs} = chrome;
+const {tabs, runtime, browserAction} = chrome;
 
-const inviteScript = () => {
-    return `
-    const btn = document.querySelector('.HH-Form-SubmitButton');
-    btn.click();
-    `
-};
 
-tabs.onCreated.addListener((tab) => {
-    const {id} = tab;
-    tabs.get(id, (tabInfo) => {
-        const { openerTabId } = tabInfo;
-        setTimeout(() => {
-            tabs.executeScript({code: inviteScript()}, () => {
-                console.warn('SCRIPT');
-                setTimeout(() => {
-                    console.warn('REMOVE');
-                    tabs.remove(id);
-                }, 5000);
-                setTimeout(() => {
-                    tabs.sendMessage(openerTabId, {action: 'invited'})
-                    console.warn('INVITED')
-                }, 5700);
-            });
-        }, 4000);
-    });
+runtime.onMessage.addListener(({action, params = {}}) => {
+    if (action === 'navigate') {
+        tabs.getSelected(({id}) => {
+            tabs.update(params.id, {highlighted: true});
+            tabs.remove(id);
+            tabs.sendMessage(params.id, {action: 'invited'});
+        });
+    }
+
+
+
+
+    if (action === 'log') {
+        console.warn('log');
+        console.log(params);
+        console.warn('log\n');
+    }
+
 });
 
 
+setTimeout(() => {
+    browserAction.getPopup({}, (popup) => {
+        console.warn(popup)
+        // return resolve(popup)
+    });
+    console.warn('Waaaa')
+},9000);

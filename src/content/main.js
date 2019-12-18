@@ -25,25 +25,23 @@ let RESUMES_ON_PAGE = [];
 
 (() => {
 
+
     RESUMES_ON_PAGE = getFormatData();
-    const status = localStorage.getItem(keys.status);
 
-    if (status && STATUSES.start) {
-        console.warn('allowed resumes on page', RESUMES_ON_PAGE);
-        setTimeout(() => {
-            goToNextCandidate();
-        }, 3000);
-    }
+    console.warn(RESUMES_ON_PAGE);
 
+    chrome.storage.sync.get(['status'], ({status}) => {
+        if (status === 'start') {
+            setTimeout(() => {
+                goToNextCandidate();
+            }, 1000);
+        }
+    });
 })();
 
 
-function runApp ({clicks = 10, date = 30}) {
-
-    localStorage.setItem(keys.maxDaysCount , date);
-    localStorage.setItem(keys.maxClicksCount , clicks);
-    localStorage.setItem(keys.status , STATUSES.start);
-    localStorage.setItem(keys.doneClicks , 0);
+function runApp () {
+    console.warn('RUUUUN');
 
     goToNextCandidate();
 }
@@ -55,28 +53,30 @@ function navigate() {
 
     if (eNext.firstElementChild) {
         eNext.firstElementChild.click();
+    } else {
+        chrome.storage.sync.set({'error': 'Следующая страница недоступна'});
     }
 }
 
 
 function goToNextCandidate() {
 
-    const maxClicksCount = localStorage.getItem(keys.maxClicksCount);
-    const clicks = localStorage.getItem(keys.doneClicks);
-
-    if (Number(maxClicksCount) === Number(clicks)) {
-        localStorage.setItem(keys.status, STATUSES.finish);
-    } else {
-        if (RESUMES_ON_PAGE.length > 0) {
-            inviteCandidate(RESUMES_ON_PAGE[0]);
+    chrome.storage.sync.get(['maxDate', 'maxClicks', 'doneClicks'], ({maxDate, maxClicks, doneClicks}) => {
+        if (Number(maxClicks) === Number(doneClicks)) {
+            chrome.storage.sync.set({'status': 'finish'});
         } else {
-            navigate();
+            if (RESUMES_ON_PAGE.length > 0) {
+                inviteCandidate(RESUMES_ON_PAGE[0]);
+            } else {
+                navigate();
+            }
         }
-    } 
+    });
 }
 
 function inviteCandidate(resume) {
-    localStorage.setItem(keys.id , resume.id);
+
+    chrome.storage.sync.set({'activeId': resume.id});
 
     const btn = resume.ref.querySelector(classes.button);
     btn.setAttribute('target', '_blank');
@@ -120,27 +120,22 @@ function needDoInvite(text) {
 }
 
 
-chrome.runtime.onMessage.addListener((msg) => {
-    switch (msg.action) {
-        case "start": {
-            console.log('START');
-            runApp(msg.body);
-            break;
-        }
-        case "invited": {
-                       
-            const clicks = localStorage.getItem(keys.doneClicks);
-            localStorage.setItem(keys.doneClicks, Number(clicks) + 1);
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    const { status, maxDate, maxClicks } = changes;
+    const {newValue} = status || {};
 
-            RESUMES_ON_PAGE = RESUMES_ON_PAGE.filter(res => res.id !== localStorage.getItem(keys.id));
-            
-            console.log(RESUMES_ON_PAGE);
-            console.log('INVITED');
-            goToNextCandidate();
-            break;
-        }
-        default:
-            break;
+    if (newValue === 'start' && maxClicks && maxDate) {
+        runApp();
     }
-})
+});
 
+chrome.runtime.onMessage.addListener(({action, params = {}}) => {
+    if (action === 'invited') {
+        console.warn('INVITED');
+        chrome.storage.sync.get(['activeId', 'doneClicks'], ({activeId, doneClicks}) => {
+            chrome.storage.sync.set({doneClicks: doneClicks + 1});
+            RESUMES_ON_PAGE = RESUMES_ON_PAGE.filter(res => res.id !== activeId);
+            goToNextCandidate();
+        });
+    }
+});
