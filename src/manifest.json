@@ -47,6 +47,7 @@
   },
   "browser_action": {
     "default_title": "HH Clicker",
-    "default_popup": "popup/popup.html"
+    "default_popup": "popup/popup.html",
+    "default_icon": "img/user-male.png"
   }
 }

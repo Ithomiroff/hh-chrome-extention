@@ -22,6 +22,8 @@ document.addEventListener(('DOMContentLoaded'), () => {
     const interval = document.getElementById('interval');
     const newRequestForm = document.getElementById('form-new');
     const newRequestButton = document.getElementById('newRequest');
+    const dropProcessButton = document.getElementById('dropProcess');
+    const dropProcessWrapper = document.getElementById('dropProcessWrapper');
 
     const form = document.getElementById('form');
     const bar = document.getElementById('progress');
@@ -34,6 +36,7 @@ document.addEventListener(('DOMContentLoaded'), () => {
             tabs.getSelected(({id}) => {
                 sync.set({
                     'status': 'start',
+                    'error': null,
                     'maxClicks': clicks.value,
                     'maxDate': date.value,
                     'interval': interval.value,
@@ -44,13 +47,24 @@ document.addEventListener(('DOMContentLoaded'), () => {
         }
     });
 
-
-    newRequestButton.addEventListener('click', () => {
-        sync.remove(['status', 'maxClicks', 'maxDate', 'doneClicks', 'tabId']);
+    const dropProcess = () => {
+        sync.remove([
+            'status',
+            'maxClicks',
+            'maxDate',
+            'doneClicks',
+            'tabId',
+            'interval',
+            'timeStart',
+            'timeEnd'
+        ]);
         form.style.display = 'block';
         bar.style.display = 'none';
         newRequestButton.style.display = 'none';
-    });
+    };
+
+    dropProcessButton.addEventListener('click', () => dropProcess());
+    newRequestButton.addEventListener('click', () => dropProcess());
 
     sync.get(['status', 'maxClicks', 'doneClicks'], ({status, maxClicks, doneClicks}) => {
         if (status === 'start') {
@@ -65,6 +79,7 @@ document.addEventListener(('DOMContentLoaded'), () => {
         if (status === 'finish') {
             bar.style.display = 'block';
             form.style.display = 'none';
+            dropProcessWrapper.style.display = 'none';
             newRequestForm.style.display = 'block';
         }
 

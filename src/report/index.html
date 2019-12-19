@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Кликкер отчет</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-size: 18px;
+            background: aliceblue;
+        }
+        .logs {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            width: 500px;
+        }
+        .log__label {
+            display: inline-block;
+            width: 250px;
+        }
+        .log__text {
+            font-weight: 600;
+        }
+        .title {
+            position: absolute;
+            top: -13px;
+            left: 0;
+            font-size: 16px;
+        }
+        .form {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            margin-top: 40px;
+        }
+        .field {
+            width: 100%;
+            line-height: 30px;
+            padding: 0 14px;
+            font-size: 16px;
+            background: #D8D8D8;
+            border: none;
+            margin: 10px 0;
+            color: #fff;
+        }
+        .field-wrapper {
+            position: relative;
+        }
+        .button {
+            background: #d10a11;
+            color: #fff;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="index.js"></script>
+</head>
+<body>
+    <div class="logs">
+        <div class="logs__title">
+            <h3>Отчет</h3>
+        </div>
+        <div class="logs-content" id="logs"></div>
+        <div class="logs-form">
+            <form class="form" id="form">
+                <div class="field-wrapper">
+                    <span class="title">Email для отправки отчета:</span>
+                    <input type="email" class="field" name="email" id="email" placeholder="Email">
+                </div>
+                <input type="submit" class="field button" value="Отправить" id="send">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

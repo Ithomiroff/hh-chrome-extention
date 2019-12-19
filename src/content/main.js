@@ -15,12 +15,11 @@ const randomInteger = (max) => {
 
 let RESUMES_ON_PAGE = [];
 
+
 (() => {
-
-    // chrome.storage.sync.clear();
     RESUMES_ON_PAGE = getFormatData();
-
-    console.warn(RESUMES_ON_PAGE);
+    // RESUMES_ON_PAGE.length = 1;
+    console.log(RESUMES_ON_PAGE);
 
     chrome.storage.sync.get(['status'], ({status}) => {
         if (status === 'start') {
@@ -29,14 +28,24 @@ let RESUMES_ON_PAGE = [];
             }, 1000);
         }
     });
-
 })();
 
 
 function runApp () {
-    console.warn('RUUUUN');
+    const timeStart = `${new Date().getHours()}: ${new Date().getMinutes()}: ${new Date().getSeconds()}`;
+    console.log('%cЗапуск ' + timeStart, 'background: #222; color:yellow;font-size: 18px');
+    chrome.storage.sync.set({timeStart});
 
+    RESUMES_ON_PAGE = getFormatData();
+    console.log(RESUMES_ON_PAGE);
     goToNextCandidate();
+}
+
+function finishApp() {
+    const timeEnd = `${new Date().getHours()}: ${new Date().getMinutes()}: ${new Date().getSeconds()}`;
+    console.log('%cФиниш:    ' + timeEnd, 'background: #222; color:yellow; font-size: 18px');
+    chrome.storage.sync.set({timeEnd});
+    chrome.storage.sync.set({'status': 'finish'});
 }
 
 function navigate() {
@@ -44,10 +53,10 @@ function navigate() {
     const eActivePage = ePaginator.querySelector(classes.activePage);
     const eNext = eActivePage.nextSibling;
 
-    if (eNext.firstElementChild) {
+    if (eNext && eNext.firstElementChild) {
         eNext.firstElementChild.click();
     } else {
-        chrome.storage.sync.set({'error': 'Следующая страница недоступна'});
+        finishApp();
     }
 }
 
@@ -56,7 +65,7 @@ function goToNextCandidate() {
 
     chrome.storage.sync.get(['maxDate', 'maxClicks', 'doneClicks'], ({maxDate, maxClicks, doneClicks}) => {
         if (Number(maxClicks) === Number(doneClicks)) {
-            chrome.storage.sync.set({'status': 'finish'});
+            finishApp();
         } else {
             if (RESUMES_ON_PAGE.length > 0) {
                 inviteCandidate(RESUMES_ON_PAGE[0]);
@@ -79,7 +88,7 @@ function inviteCandidate(resume) {
 
     chrome.storage.sync.get(['interval'], ({interval}) => {
         if (interval !== 3) {
-            console.warn({interval: randomInteger(interval)});
+            console.log('%cИнтервал ' + randomInteger(interval), 'background: #222; color:yellow;font-size: 18px');
             setTimeout(performClick, randomInteger(interval) * 1000);
         } else {
             performClick();
@@ -92,6 +101,8 @@ function getFormatData() {
     const resumeBlocks = document.querySelectorAll(classes.resumeWrapper);
     const resumeBlocksArray = [...resumeBlocks];
     const res = [];
+
+
     for (let i = 0; i < resumeBlocksArray.length; i++) {
         const prevInviteDate = resumeBlocksArray[i].querySelector(classes.resumeDate);
         const text = prevInviteDate ? prevInviteDate.textContent : null;
@@ -124,7 +135,7 @@ function needDoInvite(text, callback) {
 
         const diffDays = diff / (1000 * 3600 * 24);
 
-        callback(diffDays >  maxDate);
+        callback(Math.ceil(diffDays) >  Number(maxDate));
     });
 
 }
@@ -141,7 +152,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 chrome.runtime.onMessage.addListener(({action, params = {}}) => {
     if (action === 'invited') {
-        console.warn('INVITED');
+        console.log('%cПриглашен ', 'background: #222; color:yellow;font-size: 18px');
         chrome.storage.sync.get(['activeId', 'doneClicks'], ({activeId, doneClicks}) => {
             chrome.storage.sync.set({doneClicks: doneClicks + 1});
             RESUMES_ON_PAGE = RESUMES_ON_PAGE.filter(res => res.id !== activeId);
