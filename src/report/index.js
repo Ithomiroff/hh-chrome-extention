@@ -27,18 +27,23 @@ const insertReport = ({doneClicks, timeStart, timeEnd, maxClicks}) => {
     }
 };
 
-const handleReport = () => {
+const handleReport = ({doneClicks, timeStart, timeEnd, maxClicks, email}) => {
+    const rep = document.getElementById('reportStatus');
+    rep.innerText = 'Отчет отправляется...';
     const form = new FormData();
-    const fileUrl = extension.getURL("report/index.html");
-    fetch(fileUrl)
-        .then(res => res.text())
-        .then(file => {
-            console.warn(file)
-            form.append('report', file);
-            form.append('email', 'ithomiroff@gmail.com');
+    form.append('email', email);
+    form.append('doneClicks', doneClicks);
+    form.append('timeStart', timeStart);
+    form.append('timeEnd', timeEnd);
+    form.append('maxClicks', maxClicks);
 
-            sendFile(form).then(res => console.warn(res));
-        });
+    sendFile(form).then(res => {
+        if (res.status === 200) {
+            rep.innerText = 'Отчет доставлен успешно';
+        } else {
+            rep.innerText = 'Ошибка отправки отчета!';
+        }
+    });
 
     function sendFile(body) {
         const url = `http://v.pinscherweb.ru/index.php`;
@@ -52,9 +57,10 @@ const handleReport = () => {
 };
 
 const gotDOM = () => {
-    const handleStore = ({status, maxClicks, doneClicks, timeStart, timeEnd}) => {
+    const handleStore = ({status, maxClicks, doneClicks, timeStart, timeEnd, email}) => {
         if (status === 'finish') {
             insertReport({doneClicks, timeStart, timeEnd, maxClicks});
+            handleReport({doneClicks, timeStart, timeEnd, maxClicks, email});
         } else {
             tabs.getSelected(({id}) => {
                 tabs.remove(id);
@@ -68,7 +74,8 @@ const gotDOM = () => {
         'maxClicks',
         'doneClicks',
         'timeStart',
-        'timeEnd'
+        'timeEnd',
+        'email'
     ], handleStore);
 };
 
