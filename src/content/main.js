@@ -1,4 +1,3 @@
-
 const classes = {
     resumeWrapper: '[data-resume-id]',
     resumeDate: '.resume-search-item__state_phone_interview',
@@ -17,10 +16,6 @@ let RESUMES_ON_PAGE = [];
 
 
 (() => {
-    // RESUMES_ON_PAGE = getFormatData();
-    // RESUMES_ON_PAGE.length = 1;
-    // console.log(RESUMES_ON_PAGE);
-
     chrome.storage.sync.get(['status', 'maxDate'], ({status, maxDate}) => {
 
         RESUMES_ON_PAGE = getFormatData(maxDate);
@@ -34,7 +29,7 @@ let RESUMES_ON_PAGE = [];
 })();
 
 
-function runApp () {
+function runApp() {
     const timeStart = `${new Date().getHours()}: ${new Date().getMinutes()}: ${new Date().getSeconds()}`;
     console.log('%cЗапуск ' + timeStart, 'background: #222; color:yellow;font-size: 18px');
     chrome.storage.sync.set({timeStart});
@@ -44,6 +39,13 @@ function runApp () {
         console.log(RESUMES_ON_PAGE);
         goToNextCandidate();
     });
+
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `Старт процесса. Время - ${timeStart}`
+        }
+    });
 }
 
 function finishApp() {
@@ -51,6 +53,13 @@ function finishApp() {
     console.log('%cФиниш:    ' + timeEnd, 'background: #222; color:yellow; font-size: 18px');
     chrome.storage.sync.set({timeEnd});
     chrome.storage.sync.set({'status': 'finish'});
+
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `Завершение процесса. Время - ${timeEnd}`
+        }
+    });
 }
 
 function navigate() {
@@ -60,6 +69,12 @@ function navigate() {
 
     if (eNext && eNext.firstElementChild) {
         eNext.firstElementChild.click();
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `Переход на следующую страницу`
+            }
+        });
     } else {
         finishApp();
     }
@@ -67,7 +82,12 @@ function navigate() {
 
 
 function goToNextCandidate() {
-
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `Поиск следующего резюме`
+        }
+    });
     chrome.storage.sync.get(['maxDate', 'maxClicks', 'doneClicks'], ({maxDate, maxClicks, doneClicks}) => {
         if (Number(maxClicks) === Number(doneClicks)) {
             finishApp();
@@ -83,6 +103,13 @@ function goToNextCandidate() {
 
 function inviteCandidate(resume) {
 
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `Приглашаю кандидата с резюме ${resume.id}`
+        }
+    });
+
     const performClick = () => {
         const btn = resume.ref.querySelector(classes.button);
         btn.setAttribute('target', '_blank');
@@ -94,6 +121,12 @@ function inviteCandidate(resume) {
     chrome.storage.sync.get(['interval'], ({interval}) => {
         if (interval !== 3) {
             console.log('%cИнтервал ' + randomInteger(interval), 'background: #222; color:yellow;font-size: 18px');
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Кликаю с интервалом ${randomInteger(interval)} секунды`
+                }
+            });
             setTimeout(performClick, randomInteger(interval) * 1000);
         } else {
             performClick();
@@ -103,7 +136,6 @@ function inviteCandidate(resume) {
 }
 
 function getFormatData(maxDate) {
-    console.warn(maxDate)
     const resumeBlocks = document.querySelectorAll(classes.resumeWrapper);
     const resumeBlocksArray = [...resumeBlocks];
     const res = [];
@@ -138,24 +170,12 @@ function needDoInvite(text, maxDate) {
 
     const diffDays = diff / (1000 * 3600 * 24);
 
-    return Math.ceil(diffDays) >  Number(maxDate);
-
-    // chrome.storage.sync.get(['maxDate'], ({maxDate}) => {
-    //     const date = text.match(/\d+/g);
-    //     const newDate = `${date[1]}.${date[0]}.${date[2]}`;
-    //
-    //     const diff = (new Date()).getTime() - new Date(newDate).getTime();
-    //
-    //     const diffDays = diff / (1000 * 3600 * 24);
-    //
-    //     callback(Math.ceil(diffDays) >  Number(maxDate));
-    // });
-
+    return Math.ceil(diffDays) > Number(maxDate);
 }
 
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
-    const { status, maxDate, maxClicks } = changes;
+    const {status, maxDate, maxClicks} = changes;
     const {newValue} = status || {};
 
     if (newValue === 'start' && maxClicks && maxDate) {
@@ -167,6 +187,12 @@ chrome.runtime.onMessage.addListener(({action, params = {}}) => {
     if (action === 'invited') {
         console.log('%cПриглашен ', 'background: #222; color:yellow;font-size: 18px');
         chrome.storage.sync.get(['activeId', 'doneClicks'], ({activeId, doneClicks}) => {
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Приглашен кандидат с резюме ${activeId}`
+                }
+            });
             chrome.storage.sync.set({doneClicks: doneClicks + 1});
             RESUMES_ON_PAGE = RESUMES_ON_PAGE.filter(res => res.id !== activeId);
             goToNextCandidate();

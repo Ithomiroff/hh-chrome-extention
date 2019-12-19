@@ -1,19 +1,5 @@
+const {tabs, storage: {sync}, notifications, runtime} = chrome;
 
-
-const {tabs, storage: {sync}, notifications} = chrome;
-
-const idNot = 'startNot';
-const iconUrl = 'https://img.icons8.com/material/4ac144/256/user-male.png';
-
-const showMessage = (maxClicks) => {
-    notifications.clear(idNot);
-    notifications.create(idNot, {
-        type: 'basic',
-        title: 'Кликарь HH',
-        message: `Процесс запушен. Нужно прокликать ${maxClicks}`,
-        iconUrl
-    }, () => {});
-};
 
 document.addEventListener(('DOMContentLoaded'), () => {
     const btn = document.getElementById('start');

@@ -41,7 +41,8 @@
   ],
   "background": {
     "scripts": [
-      "background/background.js"
+      "background/background.js",
+      "background/logger.js"
     ],
     "persistent": false
   },

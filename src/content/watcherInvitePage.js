@@ -11,6 +11,12 @@ const isInviting = () => {
     sync.get(['status', 'activeId'], ({status, activeId}) => {
         if (status === 'start' && activeId) {
             runScript();
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Кликаю пригласить кандидата на странице 'приглашения'`
+                }
+            });
         }
     })
 };

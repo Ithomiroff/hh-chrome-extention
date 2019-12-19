@@ -56,16 +56,6 @@ runtime.onMessage.addListener(({action, params = {}}) => {
             tabs.sendMessage(params.id, {action: 'invited'});
         });
     }
-
-
-
-
-    if (action === 'log') {
-        // console.warn('log');
-        // console.log(params);
-        // console.warn('log\n');
-    }
-
 });
 
 (() => {
