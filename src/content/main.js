@@ -1,16 +1,3 @@
-const STATUSES = {
-    start: '1',
-    pause: '2',
-    finish: '3',
-};
-
-const keys = {
-    id: '__hhActiveID',
-    status: '__hhStatus',
-    maxDaysCount: '__hhMaxDaysCount',
-    maxClicksCount: '__hhMaxClicksCountt',
-    doneClicks: '__hhDoneClicks',
-}
 
 const classes = {
     resumeWrapper: '[data-resume-id]',
@@ -21,11 +8,16 @@ const classes = {
     activePage: '.bloko-button_pressed'
 };
 
+const randomInteger = (max) => {
+    let rand = 3 - 0.5 + Math.random() * (max - 3 + 1);
+    return Math.round(rand);
+};
+
 let RESUMES_ON_PAGE = [];
 
 (() => {
 
-
+    // chrome.storage.sync.clear();
     RESUMES_ON_PAGE = getFormatData();
 
     console.warn(RESUMES_ON_PAGE);
@@ -37,6 +29,7 @@ let RESUMES_ON_PAGE = [];
             }, 1000);
         }
     });
+
 })();
 
 
@@ -76,11 +69,23 @@ function goToNextCandidate() {
 
 function inviteCandidate(resume) {
 
+    const performClick = () => {
+        const btn = resume.ref.querySelector(classes.button);
+        btn.setAttribute('target', '_blank');
+        btn.click();
+    };
+
     chrome.storage.sync.set({'activeId': resume.id});
 
-    const btn = resume.ref.querySelector(classes.button);
-    btn.setAttribute('target', '_blank');
-    btn.click();
+    chrome.storage.sync.get(['interval'], ({interval}) => {
+        if (interval !== 3) {
+            console.warn({interval: randomInteger(interval)});
+            setTimeout(performClick, randomInteger(interval) * 1000);
+        } else {
+            performClick();
+        }
+    });
+
 }
 
 function getFormatData() {
@@ -91,12 +96,14 @@ function getFormatData() {
         const prevInviteDate = resumeBlocksArray[i].querySelector(classes.resumeDate);
         const text = prevInviteDate ? prevInviteDate.textContent : null;
         if (text) {
-            if (needDoInvite(text)) {
-                res.push({
-                    ref: resumeBlocksArray[i],
-                    id: resumeBlocksArray[i].getAttribute('data-resume-id'),
-                });
-            }
+            needDoInvite(text, (result) => {
+                if (result) {
+                    res.push({
+                        ref: resumeBlocksArray[i],
+                        id: resumeBlocksArray[i].getAttribute('data-resume-id'),
+                    });
+                }
+            });
         } else {
             res.push({
                 ref: resumeBlocksArray[i],
@@ -108,15 +115,18 @@ function getFormatData() {
     return res;
 }
 
-function needDoInvite(text) {
-    const date = text.match(/\d+/g);
-    const newDate = `${date[1]}.${date[0]}.${date[2]}`
+function needDoInvite(text, callback) {
+    chrome.storage.sync.get(['maxDate'], ({maxDate}) => {
+        const date = text.match(/\d+/g);
+        const newDate = `${date[1]}.${date[0]}.${date[2]}`;
 
-    const diff = (new Date()).getTime() - new Date(newDate).getTime();
+        const diff = (new Date()).getTime() - new Date(newDate).getTime();
 
-    const diffDays = diff / (1000 * 3600 * 24);
+        const diffDays = diff / (1000 * 3600 * 24);
 
-    return diffDays >  localStorage.getItem(keys.maxDaysCount);
+        callback(diffDays >  maxDate);
+    });
+
 }
 
 

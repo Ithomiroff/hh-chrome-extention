@@ -1,12 +1,25 @@
 
 
-const {tabs, storage: {sync}} = chrome;
+const {tabs, storage: {sync}, notifications} = chrome;
 
+const idNot = 'startNot';
+const iconUrl = 'https://img.icons8.com/material/4ac144/256/user-male.png';
+
+const showMessage = (maxClicks) => {
+    notifications.clear(idNot);
+    notifications.create(idNot, {
+        type: 'basic',
+        title: 'Кликарь HH',
+        message: `Процесс запушен. Нужно прокликать ${maxClicks}`,
+        iconUrl
+    }, () => {});
+};
 
 document.addEventListener(('DOMContentLoaded'), () => {
     const btn = document.getElementById('start');
     const clicks = document.getElementById('clicks');
     const date = document.getElementById('date');
+    const interval = document.getElementById('interval');
     const newRequestForm = document.getElementById('form-new');
     const newRequestButton = document.getElementById('newRequest');
 
@@ -17,12 +30,13 @@ document.addEventListener(('DOMContentLoaded'), () => {
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (clicks && clicks.value && date && date.value) {
+        if (clicks && clicks.value && date && date.value && interval.value >= 3) {
             tabs.getSelected(({id}) => {
                 sync.set({
                     'status': 'start',
                     'maxClicks': clicks.value,
                     'maxDate': date.value,
+                    'interval': interval.value,
                     'doneClicks': 0,
                     'tabId': id,
                 });
@@ -39,7 +53,6 @@ document.addEventListener(('DOMContentLoaded'), () => {
     });
 
     sync.get(['status', 'maxClicks', 'doneClicks'], ({status, maxClicks, doneClicks}) => {
-        console.warn(status);
         if (status === 'start') {
             form.style.display = 'none';
             bar.style.display = 'block';
