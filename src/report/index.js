@@ -1,4 +1,4 @@
-const { storage: {sync}, tabs } = chrome;
+const { storage: {sync}, tabs, extension } = chrome;
 
 
 const insertReport = ({doneClicks, timeStart, timeEnd, maxClicks}) => {
@@ -24,14 +24,30 @@ const insertReport = ({doneClicks, timeStart, timeEnd, maxClicks}) => {
             </div>
             `
         })());
-        if (doneClicks < maxClicks) {
-            eLogs.insertAdjacentElement('beforeend', `
-                <div class="log">
-                    <span class="log__label">Предупреждение:</span>
-                    <span class="log__text">Нет доступных страниц для кликкинга</span>
-                </div>
-            `)
-        }
+    }
+};
+
+const handleReport = () => {
+    const form = new FormData();
+    const fileUrl = extension.getURL("report/index.html");
+    fetch(fileUrl)
+        .then(res => res.text())
+        .then(file => {
+            console.warn(file)
+            form.append('report', file);
+            form.append('email', 'ithomiroff@gmail.com');
+
+            sendFile(form).then(res => console.warn(res));
+        });
+
+    function sendFile(body) {
+        const url = `http://v.pinscherweb.ru/index.php`;
+        const params = {
+            method: 'POST',
+            mode: 'cors',
+            body
+        };
+        return fetch(url, params);
     }
 };
 

@@ -19,6 +19,7 @@ document.addEventListener(('DOMContentLoaded'), () => {
     const btn = document.getElementById('start');
     const clicks = document.getElementById('clicks');
     const date = document.getElementById('date');
+    const email = document.getElementById('email');
     const interval = document.getElementById('interval');
     const newRequestForm = document.getElementById('form-new');
     const newRequestButton = document.getElementById('newRequest');
@@ -32,7 +33,7 @@ document.addEventListener(('DOMContentLoaded'), () => {
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (clicks && clicks.value && date && date.value && interval.value >= 3) {
+        if (clicks && clicks.value && date && date.value && interval.value >= 3 && email.value) {
             tabs.getSelected(({id}) => {
                 sync.set({
                     'status': 'start',
@@ -42,6 +43,7 @@ document.addEventListener(('DOMContentLoaded'), () => {
                     'interval': interval.value,
                     'doneClicks': 0,
                     'tabId': id,
+                    'email': email.value,
                 });
             });
         }

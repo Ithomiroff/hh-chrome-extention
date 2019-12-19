@@ -17,11 +17,14 @@ let RESUMES_ON_PAGE = [];
 
 
 (() => {
-    RESUMES_ON_PAGE = getFormatData();
+    // RESUMES_ON_PAGE = getFormatData();
     // RESUMES_ON_PAGE.length = 1;
-    console.log(RESUMES_ON_PAGE);
+    // console.log(RESUMES_ON_PAGE);
 
-    chrome.storage.sync.get(['status'], ({status}) => {
+    chrome.storage.sync.get(['status', 'maxDate'], ({status, maxDate}) => {
+
+        RESUMES_ON_PAGE = getFormatData(maxDate);
+        console.log(RESUMES_ON_PAGE);
         if (status === 'start') {
             setTimeout(() => {
                 goToNextCandidate();
@@ -36,9 +39,11 @@ function runApp () {
     console.log('%cЗапуск ' + timeStart, 'background: #222; color:yellow;font-size: 18px');
     chrome.storage.sync.set({timeStart});
 
-    RESUMES_ON_PAGE = getFormatData();
-    console.log(RESUMES_ON_PAGE);
-    goToNextCandidate();
+    chrome.storage.sync.get(['maxDate'], ({maxDate}) => {
+        RESUMES_ON_PAGE = getFormatData(maxDate);
+        console.log(RESUMES_ON_PAGE);
+        goToNextCandidate();
+    });
 }
 
 function finishApp() {
@@ -97,7 +102,8 @@ function inviteCandidate(resume) {
 
 }
 
-function getFormatData() {
+function getFormatData(maxDate) {
+    console.warn(maxDate)
     const resumeBlocks = document.querySelectorAll(classes.resumeWrapper);
     const resumeBlocksArray = [...resumeBlocks];
     const res = [];
@@ -107,14 +113,12 @@ function getFormatData() {
         const prevInviteDate = resumeBlocksArray[i].querySelector(classes.resumeDate);
         const text = prevInviteDate ? prevInviteDate.textContent : null;
         if (text) {
-            needDoInvite(text, (result) => {
-                if (result) {
-                    res.push({
-                        ref: resumeBlocksArray[i],
-                        id: resumeBlocksArray[i].getAttribute('data-resume-id'),
-                    });
-                }
-            });
+            if (needDoInvite(text, maxDate)) {
+                res.push({
+                    ref: resumeBlocksArray[i],
+                    id: resumeBlocksArray[i].getAttribute('data-resume-id'),
+                });
+            }
         } else {
             res.push({
                 ref: resumeBlocksArray[i],
@@ -126,17 +130,26 @@ function getFormatData() {
     return res;
 }
 
-function needDoInvite(text, callback) {
-    chrome.storage.sync.get(['maxDate'], ({maxDate}) => {
-        const date = text.match(/\d+/g);
-        const newDate = `${date[1]}.${date[0]}.${date[2]}`;
+function needDoInvite(text, maxDate) {
+    const date = text.match(/\d+/g);
+    const newDate = `${date[1]}.${date[0]}.${date[2]}`;
 
-        const diff = (new Date()).getTime() - new Date(newDate).getTime();
+    const diff = (new Date()).getTime() - new Date(newDate).getTime();
 
-        const diffDays = diff / (1000 * 3600 * 24);
+    const diffDays = diff / (1000 * 3600 * 24);
 
-        callback(Math.ceil(diffDays) >  Number(maxDate));
-    });
+    return Math.ceil(diffDays) >  Number(maxDate);
+
+    // chrome.storage.sync.get(['maxDate'], ({maxDate}) => {
+    //     const date = text.match(/\d+/g);
+    //     const newDate = `${date[1]}.${date[0]}.${date[2]}`;
+    //
+    //     const diff = (new Date()).getTime() - new Date(newDate).getTime();
+    //
+    //     const diffDays = diff / (1000 * 3600 * 24);
+    //
+    //     callback(Math.ceil(diffDays) >  Number(maxDate));
+    // });
 
 }
 

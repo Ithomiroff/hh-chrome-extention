@@ -77,16 +77,20 @@
     <div class="wrapper">
         <form class="form" id="form">
             <div class="field-wrapper">
-                <input type="text" class="field" name="date" id="date" value="30">
+                <input type="text" class="field" name="date" id="date" value="30" required>
                 <span class="title">Количество дней</span>
             </div>
             <div class="field-wrapper">
-                <input type="text" class="field" name="clicks" id="clicks" value="10">
+                <input type="text" class="field" name="clicks" id="clicks" value="10" required>
                 <span class="title">Количество кликов</span>
             </div>
             <div class="field-wrapper">
-                <input type="text" class="field" name="interval" id="interval" value="3">
+                <input type="text" class="field" name="interval" id="interval" value="3" required>
                 <span class="title">Интервал между кликами</span>
+            </div>
+            <div class="field-wrapper">
+                <input type="email" class="field" name="email" id="email" value="ithomiroff@gmail.com" required>
+                <span class="title">Email для отчета</span>
             </div>
             <input type="submit" class="field button" value="Старт" id="start">
         </form>
