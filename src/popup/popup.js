@@ -1,7 +1,7 @@
 const {tabs, storage: {sync}, notifications, runtime} = chrome;
 
 
-document.addEventListener(('DOMContentLoaded'), () => {
+const gotDom = () => {
     const btn = document.getElementById('start');
     const clicks = document.getElementById('clicks');
     const date = document.getElementById('date');
@@ -77,5 +77,17 @@ document.addEventListener(('DOMContentLoaded'), () => {
         goal.innerText = maxClicks === undefined ? '' : maxClicks;
     });
 
-});
+};
+
+try {
+    document.addEventListener(('DOMContentLoaded'), gotDom);
+} catch (err) {
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `ОШИБКА В КОДЕ! Ошибка на странице popup`,
+            err
+        }
+    });
+}
 

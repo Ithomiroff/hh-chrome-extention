@@ -49,34 +49,62 @@ function runApp() {
 }
 
 function finishApp() {
-    const timeEnd = `${new Date().getHours()}: ${new Date().getMinutes()}: ${new Date().getSeconds()}`;
-    console.log('%cФиниш:    ' + timeEnd, 'background: #222; color:yellow; font-size: 18px');
-    chrome.storage.sync.set({timeEnd});
-    chrome.storage.sync.set({'status': 'finish'});
+    try {
+        const timeEnd = `${new Date().getHours()}: ${new Date().getMinutes()}: ${new Date().getSeconds()}`;
+        console.log('%cФиниш:    ' + timeEnd, 'background: #222; color:yellow; font-size: 18px');
+        chrome.storage.sync.set({timeEnd});
+        chrome.storage.sync.set({'status': 'finish'});
 
-    chrome.runtime.sendMessage({
-        action: 'log',
-        params: {
-            msg: `Завершение процесса. Время - ${timeEnd}`
-        }
-    });
-}
 
-function navigate() {
-    const ePaginator = document.querySelector(classes.paginatorWrapper);
-    const eActivePage = ePaginator.querySelector(classes.activePage);
-    const eNext = eActivePage.nextSibling;
-
-    if (eNext && eNext.firstElementChild) {
-        eNext.firstElementChild.click();
+        chrome.storage.sync.get(['doneClicks', 'maxClicks'], ({doneClicks, maxClicks}) => {
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Завершение процесса. 
+                    Время - ${timeEnd}. 
+                    Сделано кликов ${doneClicks}. 
+                    Нужно было сделать ${maxClicks}.
+                    `
+                }
+            });
+        });
+    } catch (err) {
+        console.warn(err);
         chrome.runtime.sendMessage({
             action: 'log',
             params: {
-                msg: `Переход на следующую страницу`
+                msg: `ОШИБКА В КОДЕ!`,
+                err
             }
         });
-    } else {
-        finishApp();
+    }
+}
+
+function navigate() {
+    try {
+        const ePaginator = document.querySelector(classes.paginatorWrapper);
+        const eActivePage = ePaginator.querySelector(classes.activePage);
+        const eNext = eActivePage.nextSibling;
+
+        if (eNext && eNext.firstElementChild) {
+            eNext.firstElementChild.click();
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Переход на следующую страницу. Номер - ${eNext.firstElementChild.textContent}`
+                }
+            });
+        } else {
+            finishApp();
+        }
+    } catch (err) {
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `ОШИБКА В КОДЕ! Ошибка получения элементов пагинации`,
+                err
+            }
+        });
     }
 }
 
@@ -111,9 +139,19 @@ function inviteCandidate(resume) {
     });
 
     const performClick = () => {
-        const btn = resume.ref.querySelector(classes.button);
-        btn.setAttribute('target', '_blank');
-        btn.click();
+        try {
+            const btn = resume.ref.querySelector(classes.button);
+            btn.setAttribute('target', '_blank');
+            btn.click();
+        } catch (err) {
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `ОШИБКА В КОДЕ! Ошибка получения кнопки пригласить в резюме`,
+                    err
+                }
+            });
+        }
     };
 
     chrome.storage.sync.set({'activeId': resume.id});
@@ -136,30 +174,40 @@ function inviteCandidate(resume) {
 }
 
 function getFormatData(maxDate) {
-    const resumeBlocks = document.querySelectorAll(classes.resumeWrapper);
-    const resumeBlocksArray = [...resumeBlocks];
-    const res = [];
+    try {
+        const resumeBlocks = document.querySelectorAll(classes.resumeWrapper);
+        const resumeBlocksArray = [...resumeBlocks];
+        const res = [];
 
 
-    for (let i = 0; i < resumeBlocksArray.length; i++) {
-        const prevInviteDate = resumeBlocksArray[i].querySelector(classes.resumeDate);
-        const text = prevInviteDate ? prevInviteDate.textContent : null;
-        if (text) {
-            if (needDoInvite(text, maxDate)) {
+        for (let i = 0; i < resumeBlocksArray.length; i++) {
+            const prevInviteDate = resumeBlocksArray[i].querySelector(classes.resumeDate);
+            const text = prevInviteDate ? prevInviteDate.textContent : null;
+            if (text) {
+                if (needDoInvite(text, maxDate)) {
+                    res.push({
+                        ref: resumeBlocksArray[i],
+                        id: resumeBlocksArray[i].getAttribute('data-resume-id'),
+                    });
+                }
+            } else {
                 res.push({
                     ref: resumeBlocksArray[i],
-                    id: resumeBlocksArray[i].getAttribute('data-resume-id'),
-                });
+                    id: resumeBlocksArray[i].getAttribute('data-resume-id')
+                })
             }
-        } else {
-            res.push({
-                ref: resumeBlocksArray[i],
-                id: resumeBlocksArray[i].getAttribute('data-resume-id')
-            })
-        }
 
+        }
+        return res;
+    } catch (err) {
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `ОШИБКА В КОДЕ! Ошибка получения элементов резюме`,
+                err
+            }
+        });
     }
-    return res;
 }
 
 function needDoInvite(text, maxDate) {

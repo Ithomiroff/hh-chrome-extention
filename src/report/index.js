@@ -79,5 +79,15 @@ const gotDOM = () => {
     ], handleStore);
 };
 
-document.addEventListener('DOMContentLoaded', gotDOM);
+try {
+    document.addEventListener('DOMContentLoaded', gotDOM);
+} catch (err) {
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `ОШИБКА В КОДЕ! Ошибка на странице report`,
+            err
+        }
+    });
+}
 
