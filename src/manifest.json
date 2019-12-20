@@ -25,8 +25,8 @@
     {
       "matches": [
         "https://kostroma.hh.ru/employer/negotiations/*",
-        "https://hh.ru/search/employer/negotiations/**",
-        "https://*.hh.ru/search/employer/negotiations/**"
+        "https://hh.ru/employer/negotiations/*",
+        "https://*.hh.ru/employer/negotiations/*"
       ],
       "run_at": "document_idle",
       "js": [
@@ -36,8 +36,8 @@
     {
       "matches": [
         "https://kostroma.hh.ru/employer/vacancyresponses?*",
-        "https://hh.ru/search/employer/vacancyresponses?*",
-        "https://*.hh.ru/search/employer/vacancyresponses?*"
+        "https://hh.ru/employer/vacancyresponses?*",
+        "https://*.hh.ru/employer/vacancyresponses?*"
       ],
       "run_at": "document_end",
       "js": [
