@@ -4,7 +4,9 @@ const classes = {
     button: '.bloko-link_dimmed',
     buttonStart: '#ext-hh-start',
     paginatorWrapper: '.bloko-button-group',
-    activePage: '.bloko-button_pressed'
+    activePage: '.bloko-button_pressed',
+    btnProject: '.HH-Supernova-Menu-Activator',
+    nameProject: '.supernova-dropdown-header',
 };
 
 const randomInteger = (max) => {
@@ -15,9 +17,21 @@ const randomInteger = (max) => {
 let RESUMES_ON_PAGE = [];
 
 
-(() => {
-    chrome.storage.sync.get(['status', 'maxDate'], ({status, maxDate}) => {
+const getProjectName = () => {
+    const btn = document.querySelector(classes.btnProject);
+    if (btn) {
+        btn.click();
+        setTimeout(() => {
+            const project = document.querySelector(classes.nameProject) || {};
+            chrome.storage.sync.set({'projectName': project.textContent});
+        }, 200);
+    }
 
+};
+
+(() => {
+    getProjectName();
+    chrome.storage.sync.get(['status', 'maxDate'], ({status, maxDate}) => {
         RESUMES_ON_PAGE = getFormatData(maxDate);
         console.log(RESUMES_ON_PAGE);
         if (status === 'start') {

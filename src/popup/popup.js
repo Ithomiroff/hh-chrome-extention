@@ -19,6 +19,16 @@ const gotDom = () => {
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `
+                Клик в popup на кнопку старт
+                Значения ${clicks.value} ${date.value} ${interval.value} ${email.value}
+                
+                `,
+            }
+        });
         if (clicks && clicks.value && date && date.value && interval.value >= 3 && email.value) {
             tabs.getSelected(({id}) => {
                 sync.set({

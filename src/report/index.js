@@ -1,11 +1,15 @@
 const { storage: {sync}, tabs, extension } = chrome;
 
 
-const insertReport = ({doneClicks, timeStart, timeEnd, maxClicks}) => {
+const insertReport = ({doneClicks, timeStart, timeEnd, maxClicks, projectName}) => {
     const eLogs = document.getElementById('logs');
     if (eLogs) {
         eLogs.insertAdjacentHTML('afterbegin', (() => {
             return `
+            <div class="log">
+                <span class="log__label">Название проекта </span>
+                <span class="log__text">${projectName}</span>
+            </div>
             <div class="log">
                 <span class="log__label">Сделано кликов: </span>
                 <span class="log__text">${doneClicks}</span>
@@ -27,7 +31,7 @@ const insertReport = ({doneClicks, timeStart, timeEnd, maxClicks}) => {
     }
 };
 
-const handleReport = ({doneClicks, timeStart, timeEnd, maxClicks, email}) => {
+const handleReport = ({doneClicks, timeStart, timeEnd, maxClicks, email, projectName}) => {
     const rep = document.getElementById('reportStatus');
     rep.innerText = 'Отчет отправляется...';
     const form = new FormData();
@@ -36,6 +40,7 @@ const handleReport = ({doneClicks, timeStart, timeEnd, maxClicks, email}) => {
     form.append('timeStart', timeStart);
     form.append('timeEnd', timeEnd);
     form.append('maxClicks', maxClicks);
+    form.append('projectName', projectName);
 
     sendFile(form).then(res => {
         if (res.status === 200) {
@@ -57,10 +62,10 @@ const handleReport = ({doneClicks, timeStart, timeEnd, maxClicks, email}) => {
 };
 
 const gotDOM = () => {
-    const handleStore = ({status, maxClicks, doneClicks, timeStart, timeEnd, email}) => {
+    const handleStore = ({status, maxClicks, doneClicks, timeStart, timeEnd, email, projectName}) => {
         if (status === 'finish') {
-            insertReport({doneClicks, timeStart, timeEnd, maxClicks});
-            handleReport({doneClicks, timeStart, timeEnd, maxClicks, email});
+            insertReport({doneClicks, timeStart, timeEnd, maxClicks, projectName});
+            handleReport({doneClicks, timeStart, timeEnd, maxClicks, email, projectName});
         } else {
             tabs.getSelected(({id}) => {
                 tabs.remove(id);
@@ -73,9 +78,10 @@ const gotDOM = () => {
         'status',
         'maxClicks',
         'doneClicks',
+        'projectName',
         'timeStart',
         'timeEnd',
-        'email'
+        'email',
     ], handleStore);
 };
 

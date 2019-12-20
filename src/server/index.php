@@ -2,7 +2,8 @@
 
 $to      = $_POST["email"];
 $subject = 'HH CLICKER';
-$message = "Сделано: {$_POST["doneClicks"]} кликов.
+$message = "Название проекта: {$_POST["projectName"]} .
+Сделано: {$_POST["doneClicks"]} кликов.
 Задача сделать: {$_POST["maxClicks"]} кликов.
 Время начала: {$_POST["timeStart"]}.
 Время окончания: {$_POST["timeEnd"]}.
