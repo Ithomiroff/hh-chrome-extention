@@ -13,7 +13,9 @@
   "content_scripts": [
     {
       "matches": [
-        "https://kostroma.hh.ru/search/resume?*"
+        "https://kostroma.hh.ru/search/resume?*",
+        "https://hh.ru/search/resume?*",
+        "https://*.hh.ru/search/resume?*"
       ],
       "run_at": "document_end",
       "js": [
@@ -22,7 +24,9 @@
     },
     {
       "matches": [
-        "https://kostroma.hh.ru/employer/negotiations/*"
+        "https://kostroma.hh.ru/employer/negotiations/*",
+        "https://hh.ru/search/employer/negotiations/**",
+        "https://*.hh.ru/search/employer/negotiations/**"
       ],
       "run_at": "document_idle",
       "js": [
@@ -31,7 +35,9 @@
     },
     {
       "matches": [
-        "https://kostroma.hh.ru/employer/vacancyresponses?*"
+        "https://kostroma.hh.ru/employer/vacancyresponses?*",
+        "https://hh.ru/search/employer/vacancyresponses?*",
+        "https://*.hh.ru/search/employer/vacancyresponses?*"
       ],
       "run_at": "document_end",
       "js": [

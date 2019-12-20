@@ -71,8 +71,6 @@ const gotDom = () => {
             newRequestForm.style.display = 'block';
         }
 
-        chrome.runtime.sendMessage({action: 'log', params: {status}});
-
         done.innerText = doneClicks === undefined ? '' : doneClicks;
         goal.innerText = maxClicks === undefined ? '' : maxClicks;
     });
