@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: sans-serif;
+        }
+        .wrapper {
+            width: 300px;
+            background: #f5f9ff;
+            border-radius: 10px;
+            padding: 15px 20px;
+        }
+        .form {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+        .field {
+            width: 100%;
+            line-height: 30px;
+            padding: 0 14px;
+            font-size: 16px;
+            background: #D8D8D8;
+            border: none;
+            margin: 10px 0;
+            color: #fff;
+        }
+        .field-wrapper {
+            position: relative;
+            display: block;
+        }
+        .button {
+            background: #d10a11;
+            color: #fff;
+            text-transform: uppercase;
+        }
+    </style>
+    <script src="index.js"></script>
+</head>
+<body>
+<div class="wrapper">
+    <div class="form" id="form-new">
+        <div class="field-wrapper" id="startBtn">
+            <input type="submit" class="field button" value="Новый запрос">
+        </div>
+        <div class="field-wrapper" id="stopBtn">
+            <input type="submit" class="field button" value="Остановить процесс">
+        </div>
+    </div>
+</div>
+</body>
+</html>
