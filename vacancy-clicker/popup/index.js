@@ -20,11 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleButtons(status);
 
         startBtn.addEventListener('click', () => {
-            sync.set({'status': 'start'});
+            sync.set({
+                'status': 'start',
+                'clickedVacancyCount': 0
+            });
             toggleButtons('start');
         });
         stopBtn.addEventListener('click', () => {
-            sync.set({'status': 'finish'});
+            sync.set({
+                'status': 'finish',
+                'clickedVacancyCount': 0
+            });
             toggleButtons('finish');
         });
     };
