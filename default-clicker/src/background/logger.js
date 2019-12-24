@@ -20,7 +20,7 @@ const sendReport = () => {
     const params = {
         method: 'POST',
         mode: 'cors',
-        form
+        body: form
     };
     return fetch(url, params).then((res) => {
         if (res.status === 200) {
@@ -33,12 +33,11 @@ runtime.onMessage.addListener(({action, params = {}}) => {
 
     if (action === 'log') {
         const msg = params.msg || 'Сообщение не передано';
-        console.warn(msg);
-        logs.push(params.msg);
+        logs.push(msg);
         if (params.err) {
-            logs.push(params.msg);
-            console.error(params.err);
+            logs.push(msg);
             sendReport();
+            console.error(params.err);
         }
     }
 });

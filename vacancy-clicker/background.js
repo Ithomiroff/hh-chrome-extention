@@ -1,4 +1,4 @@
-const {runtime,tabs, storage: {sync}} = chrome;
+const {runtime, tabs, storage: {sync}} = chrome;
 
 const createTab = (url) => {
     tabs.create({url}, (tab) => {
@@ -9,16 +9,26 @@ const createTab = (url) => {
 runtime.onMessage.addListener(({action, params = {}}) => {
     if (action === 'navigate') {
         if (params.url) {
-            createTab(params.url);
+            tabs.getSelected(({id}) => {
+                if (params.prevActiveTab) {
+                    setTimeout(() => {
+                        tabs.remove(id);
+                    }, 500)
+                } else {
+                    sync.set({'prevActiveTabId': id})
+                }
+                createTab(params.url);
+            });
         }
     }
     if (action === 'removeActiveTab') {
-        sync.get(['activeTabId'], ({activeTabId}) => {
+        sync.get(['activeTabId', 'prevActiveTabId'], ({activeTabId, prevActiveTabId}) => {
             if (activeTabId) {
                 tabs.remove(activeTabId);
                 sync.remove(['activeTabId']);
-                runtime.sendMessage({action: 'tabRemoved'});
+                tabs.sendMessage(prevActiveTabId, {action: 'tabRemoved'});
             }
         })
     }
 });
+

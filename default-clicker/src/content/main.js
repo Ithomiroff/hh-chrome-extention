@@ -67,8 +67,6 @@ function finishApp() {
         const timeEnd = `${new Date().getHours()}: ${new Date().getMinutes()}: ${new Date().getSeconds()}`;
         console.log('%cФиниш:    ' + timeEnd, 'background: #222; color:yellow; font-size: 18px');
         chrome.storage.sync.set({timeEnd});
-        chrome.storage.sync.set({'status': 'finish'});
-
 
         chrome.storage.sync.get(['doneClicks', 'maxClicks'], ({doneClicks, maxClicks}) => {
             chrome.runtime.sendMessage({
@@ -81,7 +79,9 @@ function finishApp() {
                     `
                 }
             });
+            chrome.storage.sync.set({'status': 'finish'});
         });
+
     } catch (err) {
         console.warn(err);
         chrome.runtime.sendMessage({
@@ -252,7 +252,8 @@ chrome.runtime.onMessage.addListener(({action, params = {}}) => {
             chrome.runtime.sendMessage({
                 action: 'log',
                 params: {
-                    msg: `Приглашен кандидат с резюме ${activeId}`
+                    msg: `Приглашен кандидат с резюме id: ${activeId} \n Сделано кликов: ${doneClicks + 1}
+                    `
                 }
             });
             chrome.storage.sync.set({doneClicks: doneClicks + 1});

@@ -9,7 +9,7 @@ const classes = {
     totalMsg: '[data-total-messages]',
 };
 
-const maxMessagesCount = 3;
+const maxMessagesCount = 5;
 
 const COLLECTIONS = {
     phone: 'phone_interview',
@@ -34,9 +34,10 @@ const getUrlChangeStatus = () => {
     return `${prefix}vacancyId=${vacancyId}`;
 };
 
-const openSiblingTab = (url) => {
+const openSiblingTab = (url, additionalData = {}) => {
     const params = {
         url: window.location.origin + url,
+        ...additionalData
     };
     chrome.runtime.sendMessage({action: 'navigate', params});
 };
@@ -53,7 +54,11 @@ const navigate = () => {
             } else {
                 urlParams.append('page', Number(num) - 1);
             }
-            setTimeout(openSiblingTab, 1000, window.location.pathname + '?' + urlParams);
+            const url = window.location.pathname + '?' + urlParams;
+            setTimeout(openSiblingTab, 1000, url, {prevActiveTab: true});
+        } else {
+            chrome.storage.sync.set({'status': 'finish'});
+            console.warn('FINISH WORK')
         }
     }
 
@@ -72,7 +77,7 @@ const scanResumes = () => {
             });
         }
     });
-    console.warn('SCAN')
+
     console.warn({vacFormated});
 
     if (vacFormated.length < 1) {
@@ -132,3 +137,9 @@ chrome.storage.onChanged.addListener((changes) => {
     }
 });
 
+chrome.runtime.onMessage.addListener(({action, params = {}}) => {
+    console.warn({action});
+    if (action === 'tabRemoved') {
+        navigate();
+    }
+});
