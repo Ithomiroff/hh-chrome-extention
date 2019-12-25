@@ -1,3 +1,6 @@
+
+
+
 const {tabs, runtime, notifications, storage, extension} = chrome;
 const iconUrl = 'https://img.icons8.com/material/4ac144/256/user-male.png';
 const notificationsId = {

@@ -13,7 +13,7 @@
         body {
             font-family: sans-serif;
         }
-        .wrapper {
+        .wrapper, .auth {
             width: 300px;
             background: #f5f9ff;
             border-radius: 10px;
@@ -70,11 +70,17 @@
         #progress {
             display: none;
         }
+        .wrapper {
+            display: none;
+        }
     </style>
     <script src="popup.js"></script>
 </head>
 <body>
-    <div class="wrapper">
+    <div class="auth" id="auth">
+        <h3 id="auth-h">Проверка доступа расширения...</h3>
+    </div>
+    <div class="wrapper" id="wrapper">
         <form class="form" id="form">
             <div class="field-wrapper">
                 <input type="text" class="field" name="date" id="date" value="30" required>
