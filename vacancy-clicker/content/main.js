@@ -35,36 +35,76 @@ const getUrlChangeStatus = () => {
 };
 
 const openSiblingTab = (url, additionalData = {}) => {
-    const params = {
-        url: window.location.origin + url,
-        ...additionalData
-    };
-    chrome.runtime.sendMessage({action: 'navigate', params});
+    try {
+        const params = {
+            url: window.location.origin + url,
+            ...additionalData
+        };
+        chrome.runtime.sendMessage({action: 'navigate', params});
+    } catch (err) {
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `ОШИБКА В КОДЕ! Ошибка при открытии нового таба`,
+                err: 'Ошибка ' + err.name + ":" + err.message + "\n" + err.stack
+            }
+        });
+    }
 };
 
 const navigate = () => {
-    const ePage = document.querySelector(classes.pressedPage);
-    if (ePage) {
-        if (ePage.nextSibling) {
-            const href = ePage.nextSibling.querySelector('a');
-            const num = href.textContent;
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('page')) {
-                urlParams.set('page', Number(num) - 1);
+    try {
+        const ePage = document.querySelector(classes.pressedPage);
+        if (ePage) {
+            if (ePage.nextSibling) {
+                const href = ePage.nextSibling.querySelector('a');
+                const num = href.textContent;
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('page')) {
+                    urlParams.set('page', Number(num) - 1);
+                } else {
+                    urlParams.append('page', Number(num) - 1);
+                }
+                const url = window.location.pathname + '?' + urlParams;
+                setTimeout(openSiblingTab, 1000, url, {prevActiveTab: true});
+                chrome.runtime.sendMessage({
+                    action: 'log',
+                    params: {
+                        msg: `Переход на следующую страницу номер: ${Number(num) - 1}`,
+                    }
+                });
             } else {
-                urlParams.append('page', Number(num) - 1);
+                chrome.runtime.sendMessage({
+                    action: 'log',
+                    params: {
+                        msg: `Завершение работы`,
+                    }
+                });
+                chrome.storage.sync.set({'status': 'finish'});
+                console.warn('FINISH WORK')
             }
-            const url = window.location.pathname + '?' + urlParams;
-            setTimeout(openSiblingTab, 1000, url, {prevActiveTab: true});
         } else {
-            chrome.storage.sync.set({'status': 'finish'});
-            console.warn('FINISH WORK')
+            throw 'No paginator button';
         }
+    } catch (err) {
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `ОШИБКА В КОДЕ! Ошибка при переходе на следующую страницу`,
+                err: 'Ошибка ' + err.name + ":" + err.message + "\n" + err.stack
+            }
+        });
     }
-
 };
 
 const scanResumes = () => {
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `Сканирование всех резюме на странице...`
+        }
+    });
+
     const eTopics = document.querySelectorAll(classes.wrapperTopic) || [];
 
     const vacFormated = [];
@@ -84,6 +124,13 @@ const scanResumes = () => {
         return navigate();
     }
 
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `Найдено ${vacFormated.length} резюме`
+        }
+    });
+
     let url = getUrlChangeStatus();
 
     vacFormated.forEach(vac => {
@@ -93,12 +140,19 @@ const scanResumes = () => {
         }
     });
 
+    chrome.runtime.sendMessage({
+        action: 'log',
+        params: {
+            msg: `Открытие вкладки приглашение на собеседование`,
+        }
+    });
     setTimeout(openSiblingTab, 1000, (url));
 };
 
 
 
 const runApp = () => {
+
     const page = definePage();
 
     if (page === COLLECTIONS.response) {
@@ -106,6 +160,12 @@ const runApp = () => {
             if (status !== 'start') {
                 return;
             }
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Открытие странице response`,
+                }
+            });
             setTimeout(() => {
                 chrome.runtime.sendMessage({action: 'removeActiveTab'});
             }, 1000);
@@ -117,6 +177,12 @@ const runApp = () => {
             if (status !== 'start') {
                 return;
             }
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Автоматический запуск программы на странице. Статус - start`,
+                }
+            });
             scanResumes();
         });
     }
@@ -133,7 +199,23 @@ chrome.storage.onChanged.addListener((changes) => {
     const {newValue} = status || {};
 
     if (newValue === 'start') {
-        scanResumes();
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `Запуск программы!`,
+            }
+        });
+        try {
+            scanResumes();
+        } catch (err) {
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `ОШИБКА В КОДЕ! Ошибка при сканировании резюме`,
+                    err: 'Ошибка ' + err.name + ":" + err.message + "\n" + err.stack
+                }
+            });
+        }
     }
 });
 

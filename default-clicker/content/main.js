@@ -81,14 +81,12 @@ function finishApp() {
             });
             chrome.storage.sync.set({'status': 'finish'});
         });
-
     } catch (err) {
-        console.warn(err);
         chrome.runtime.sendMessage({
             action: 'log',
             params: {
-                msg: `ОШИБКА В КОДЕ!`,
-                err
+                msg: `ОШИБКА В КОДЕ! При завершении процесса`,
+                err: 'Ошибка ' + err.name + ":" + err.message + "\n" + err.stack
             }
         });
     }
@@ -116,7 +114,7 @@ function navigate() {
             action: 'log',
             params: {
                 msg: `ОШИБКА В КОДЕ! Ошибка получения элементов пагинации`,
-                err
+                err: 'Ошибка ' + err.name + ":" + err.message + "\n" + err.stack
             }
         });
     }
@@ -161,8 +159,8 @@ function inviteCandidate(resume) {
             chrome.runtime.sendMessage({
                 action: 'log',
                 params: {
-                    msg: `ОШИБКА В КОДЕ! Ошибка получения кнопки пригласить в резюме`,
-                    err
+                    msg: `ОШИБКА В КОДЕ! Ошибка получения кнопки пригласить в резюме, возможно закончился доступ к базе`,
+                    err: 'Ошибка ' + err.name + ":" + err.message + "\n" + err.stack
                 }
             });
         }

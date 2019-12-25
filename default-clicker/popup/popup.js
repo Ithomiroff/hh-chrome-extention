@@ -1,4 +1,7 @@
+const id = '09ce1029cef09a3149814f295e168b1c';
+
 const {tabs, storage: {sync}, notifications, runtime} = chrome;
+const URL = 'http://v.pinscherweb.ru/security.php';
 
 
 const gotDom = () => {
@@ -87,8 +90,34 @@ const gotDom = () => {
 
 };
 
+const checkAccess = () => {
+    const requestAuth = () => {
+        const form = new FormData();
+        form.append('id', id);
+        const params = {
+            method: 'POST',
+            mode: 'cors',
+            body: form
+        };
+        return fetch(URL, params).then((res) => res.text());
+    };
+    return requestAuth();
+};
+
 try {
-    document.addEventListener(('DOMContentLoaded'), gotDom);
+    checkAccess().then((res) => {
+        if (res && res === 'true') {
+            sync.set({'isAuth': true});
+            const wrapper = document.getElementById('wrapper');
+            const auth = document.getElementById('auth');
+            wrapper.style.display = 'block';
+            auth.style.display = 'none';
+            gotDom();
+        } else {
+            const authH = document.getElementById('auth-h');
+            authH.innerText = 'Доступ не получен. Уточните информацию у руководителя.'
+        }
+    });
 } catch (err) {
     chrome.runtime.sendMessage({
         action: 'log',

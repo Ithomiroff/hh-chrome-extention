@@ -16,7 +16,8 @@ const sendReport = () => {
     `;
 
     form.append('messages', data.toString());
-    console.warn(data);
+    form.append('type', 'clicker');
+
     const params = {
         method: 'POST',
         mode: 'cors',

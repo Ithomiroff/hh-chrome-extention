@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         stopBtn.addEventListener('click', () => {
             sync.set({'status': 'finish'});
             toggleButtons('finish');
+            chrome.runtime.sendMessage({
+                action: 'log',
+                params: {
+                    msg: `Завершение работы`,
+                }
+            });
         });
     };
 
