@@ -27,12 +27,16 @@ const gotDom = () => {
             params: {
                 msg: `
                 Клик в popup на кнопку старт
-                Значения ${clicks.value} ${date.value} ${interval.value} ${email.value}
+                Значения 
+                Количество кликов - ${clicks.value} 
+                Дата - ${date.value}
+                Интервал клика - ${interval.value} 
+                Почта для отчета - ${email.value}
                 
                 `,
             }
         });
-        if (clicks && clicks.value && date && date.value && interval.value >= 3 && email.value) {
+        if (clicks && clicks.value && date && date.value && interval.value >= 1 && email.value) {
             tabs.getSelected(({id}) => {
                 sync.set({
                     'status': 'start',

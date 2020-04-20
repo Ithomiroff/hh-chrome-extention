@@ -1,6 +1,6 @@
 const classes = {
     resumeWrapper: '[data-resume-id]',
-    resumeDate: '.resume-search-item__state_phone_interview',
+    resumeDate: '.resume-search-item__state',
     button: '.bloko-link_dimmed',
     buttonStart: '#ext-hh-start',
     paginatorWrapper: '.bloko-button-group',
@@ -169,18 +169,14 @@ function inviteCandidate(resume) {
     chrome.storage.sync.set({'activeId': resume.id});
 
     chrome.storage.sync.get(['interval'], ({interval}) => {
-        if (interval !== 3) {
-            console.log('%cИнтервал ' + randomInteger(interval), 'background: #222; color:yellow;font-size: 18px');
-            chrome.runtime.sendMessage({
-                action: 'log',
-                params: {
-                    msg: `Кликаю с интервалом ${randomInteger(interval)} секунды`
-                }
-            });
-            setTimeout(performClick, randomInteger(interval) * 1000);
-        } else {
-            performClick();
-        }
+        console.log('%cИнтервал ' + randomInteger(interval), 'background: #222; color:yellow;font-size: 18px');
+        chrome.runtime.sendMessage({
+            action: 'log',
+            params: {
+                msg: `Кликаю с интервалом ${randomInteger(interval)} секунды`
+            }
+        });
+        setTimeout(performClick, randomInteger(interval) * 1000);
     });
 
 }
@@ -195,18 +191,32 @@ function getFormatData(maxDate) {
         for (let i = 0; i < resumeBlocksArray.length; i++) {
             const prevInviteDate = resumeBlocksArray[i].querySelector(classes.resumeDate);
             const text = prevInviteDate ? prevInviteDate.textContent : null;
+            let element = null;
             if (text) {
                 if (needDoInvite(text, maxDate)) {
-                    res.push({
+                    element = {
                         ref: resumeBlocksArray[i],
                         id: resumeBlocksArray[i].getAttribute('data-resume-id'),
-                    });
+                    };
+                    // res.push({
+                    //     ref: resumeBlocksArray[i],
+                    //     id: resumeBlocksArray[i].getAttribute('data-resume-id'),
+                    // });
                 }
             } else {
-                res.push({
+                element = {
                     ref: resumeBlocksArray[i],
-                    id: resumeBlocksArray[i].getAttribute('data-resume-id')
-                })
+                    id: resumeBlocksArray[i].getAttribute('data-resume-id'),
+                };
+                // res.push({
+                //     ref: resumeBlocksArray[i],
+                //     id: resumeBlocksArray[i].getAttribute('data-resume-id')
+                // })
+            }
+            if (element) {
+                if (checkInviteButton(element.ref)) {
+                    res.push(element);
+                }
             }
 
         }
@@ -221,6 +231,11 @@ function getFormatData(maxDate) {
         });
     }
 }
+
+function checkInviteButton(ref = {}) {
+    const btn = ref.querySelector(classes.button);
+    return !!btn;
+};
 
 function needDoInvite(text, maxDate) {
     const date = text.match(/\d+/g);

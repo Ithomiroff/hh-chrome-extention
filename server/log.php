@@ -8,10 +8,10 @@ $format = $date->format('D M d, Y G:i');
 
 if ($type) {
     if ($type == 'clicker') {
-        file_put_contents("./logs/clicker/{$format}log.txt", $messages);
+        file_put_contents("./logs/clicker/{$format}log.txt" . "\n\n", $messages, FILE_APPEND);
         echo "File Sent Successfully clicker! {$messages}";
     } else if ($type == 'vacancy') {
-        file_put_contents("./logs/vacancy/{$format}log.txt", $messages);
+        file_put_contents("./logs/vacancy/{$format}log.txt" . "\n\n", $messages, FILE_APPEND);
         echo "File Sent Successfully vacancy! {$messages}";
     } else {
           echo "No Type";

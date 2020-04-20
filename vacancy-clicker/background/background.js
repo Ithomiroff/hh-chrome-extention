@@ -1,3 +1,6 @@
+import test from '../test';
+console.warn(test);
+
 const {runtime, tabs, storage: {sync}} = chrome;
 
 const createTab = (url) => {
